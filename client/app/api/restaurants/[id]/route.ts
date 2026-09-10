@@ -1,19 +1,30 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
-import { handleError } from '@/lib/errors';
+import { handleError, ApiError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
+import {validateRestaurant} from '@/lib/validation';
 
 type Params = { params: { id: string } };
 
+
+function validateId(id: string): number {
+  const parsed = Number(id);
+  if(!Number.isInteger(parsed) || parsed <= 0)
+  {
+    throw new ApiError(404, 'Restaurant not found');
+  }
+  return parsed;
+}
 /**
  * GET /api/restaurants/:id
  * Returns a single restaurant, or 404 if it doesn't exist.
  */
 export async function GET(_req: Request, { params }: Params) {
   try {
+    const id = validateId(params.id);
     const { rows } = await pool.query(
       'SELECT * FROM restaurants WHERE id = $1',
-      [params.id]
+      [id]
     );
 
     if (rows.length === 0) {
@@ -35,8 +46,9 @@ export async function GET(_req: Request, { params }: Params) {
  */
 export async function PUT(_req: Request, _ctx: Params) {
   try {
+    const id = validateId(_ctx.params.id);
     const body = await _req.json();
-    const {name, cuisine, address, rating} = body;
+    const {name, cuisine, address, rating} = validateRestaurant(body);
     const {rows} = await pool.query(`
       UPDATE restaurants
       SET name=$1, 
@@ -45,7 +57,7 @@ export async function PUT(_req: Request, _ctx: Params) {
       rating=$4
       WHERE id = $5
       RETURNING *`,
-      [name, cuisine, address, rating, _ctx.params.id]
+      [name, cuisine, address, rating, id]
     );
 
     if(rows.length == 0)
@@ -55,7 +67,7 @@ export async function PUT(_req: Request, _ctx: Params) {
         {status: 404}
       );
     }
-    return NextResponse.json(rows[0], { status: 201 });
+    return NextResponse.json(toRestaurant(rows[0]), { status: 200 });
   }
   catch (err) {
     return handleError(err);
@@ -74,17 +86,23 @@ export async function PUT(_req: Request, _ctx: Params) {
  * write-up.
  */
 export async function DELETE(_req: Request, _ctx: Params) {
-  const {rows} = await pool.query(`
-      DELETE FROM restaurants WHERE id = $1
-      RETURNING *`,
-      [_ctx.params.id]
-    );
-    if(rows.length == 0)
-    {
-      return NextResponse.json(
-        {error: 'Restaurant not found'},
-        {status: 404}
+  try {
+    const id = validateId(_ctx.params.id);
+    const {rows} = await pool.query(`
+        DELETE FROM restaurants WHERE id = $1
+        RETURNING *`,
+        [id]
       );
+      if(rows.length == 0)
+      {
+        return NextResponse.json(
+          {error: 'Restaurant not found'},
+          {status: 404}
+        );
+      }
+      return NextResponse.json(null, { status: 204 });
     }
-    return NextResponse.json(rows[0], { status: 201 });
+    catch (err) {
+      return handleError(err);
+    }
   }

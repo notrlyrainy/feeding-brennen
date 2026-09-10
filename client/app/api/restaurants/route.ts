@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/db/pool';
-import { handleError } from '@/lib/errors';
+import { handleError, ApiError } from '@/lib/errors';
 import { toRestaurant } from '@/lib/types';
+import {validateRestaurant} from '@/lib/validation';
+
+
 
 /**
  * GET /api/restaurants
@@ -34,7 +37,7 @@ export async function GET() {
 export async function POST(_req: Request) {
   try {
     const body = await _req.json();
-    const {name, cuisine, address, rating} = body;
+    const {name, cuisine, address, rating} = validateRestaurant(body);
     const {rows} = await pool.query(`
       INSERT INTO restaurants (name, cuisine, address, rating)
       VALUES ($1, $2, $3, $4) RETURNING *`,
