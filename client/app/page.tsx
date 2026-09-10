@@ -23,7 +23,7 @@ export default async function HomePage({searchParams}: Props) {
           <select
             name="cuisine"
             defaultValue={searchParams.cuisine ?? ''}
-            className="rounded border border-gray-300 px-3 py-2"
+            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-800 dark:bg-gray-600"
           >
             <option value="">All Cuisines</option>
             <option value="American">American</option>
@@ -35,7 +35,7 @@ export default async function HomePage({searchParams}: Props) {
 
           <button
             type="submit"
-            className="ml-2 rounded bg-black px-3 py-2 text-white"
+            className="ml-2 rounded bg-black px-3 py-2 text-white dark:bg-gray-600"
           > Filter</button>
         </form>
       </div>
@@ -43,15 +43,15 @@ export default async function HomePage({searchParams}: Props) {
         {restaurants.map((restaurant) => (
           <li
             key={restaurant.id}
-            className="rounded-lg border border-gray-200 bg-white p-4"
+            className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
           >
             <div className="flex items-baseline justify-between">
               <span className="font-medium">{restaurant.name}</span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {restaurant.rating}★
               </span>
             </div>
-            <div className="mt-1 text-sm text-gray-600">
+            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               {restaurant.cuisine} · {restaurant.address}
             </div>
           </li>
