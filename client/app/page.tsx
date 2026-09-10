@@ -1,14 +1,44 @@
 import { getRestaurants } from '@/lib/apiClient';
 
+
+
+
+type Props = {
+  searchParams: {
+    cuisine?: string;
+  };
+};
+
 // Server component. Fetches restaurants on each request and renders a plain
 // list. There is no loading state, no empty state, and no error handling: if
 // the API is down or returns something unexpected, this throws.
-export default async function HomePage() {
-  const restaurants = await getRestaurants();
+export default async function HomePage({searchParams}: Props) {
+  const restaurants = await getRestaurants(searchParams.cuisine);
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-medium">Restaurants</h2>
+      <div className="mb-4">
+        <h2 className="mb-4 text-lg font-medium">Restaurants</h2>
+        <form>
+          <select
+            name="cuisine"
+            defaultValue={searchParams.cuisine ?? ''}
+            className="rounded border border-gray-300 px-3 py-2"
+          >
+            <option value="">All Cuisines</option>
+            <option value="American">American</option>
+            <option value="Italian">Italian</option>
+            <option value="Mexican">Mexican</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Chinese">Chinese</option>
+          </select>
+
+          <button
+            type="submit"
+            className="ml-2 rounded bg-black px-3 py-2 text-white"
+          > Filter</button>
+        </form>
+      </div>
       <ul className="space-y-3">
         {restaurants.map((restaurant) => (
           <li

@@ -23,8 +23,11 @@ export const API_URL =
  * response status and it does not catch network failures - callers get whatever
  * `res.json()` produces, including on a 500.
  */
-export async function getRestaurants(): Promise<Restaurant[]> {
-  const res = await fetch(`${API_URL}/api/restaurants`, { cache: 'no-store' });
+export async function getRestaurants(cuisine?: string): Promise<Restaurant[]> {
+  const url = cuisine
+  ?`${API_URL}/api/restaurants?cuisine=${encodeURIComponent(cuisine)}`
+  : `${API_URL}/api/restaurants`;
+  const res = await fetch(url, { cache: 'no-store' });
   return res.json();
 }
 
@@ -33,5 +36,10 @@ export async function getRestaurants(): Promise<Restaurant[]> {
  */
 export async function getRestaurant(id: number | string): Promise<Restaurant> {
   const res = await fetch(`${API_URL}/api/restaurants/${id}`, { cache: 'no-store' });
+  return res.json();
+}
+
+export async function getRestaurantByCuisine(cuisine: string): Promise<Restaurant[]> {
+  const res = await fetch(`${API_URL}/api/restaurants/${cuisine}`, {cache: 'no-store'});
   return res.json();
 }

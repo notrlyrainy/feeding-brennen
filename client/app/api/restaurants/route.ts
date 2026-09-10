@@ -10,11 +10,30 @@ import {validateRestaurant} from '@/lib/validation';
  * GET /api/restaurants
  * Returns all restaurants.
  */
-export async function GET() {
+export async function GET(_req: Request) {
   try {
-    const { rows } = await pool.query(
-      'SELECT * FROM restaurants ORDER BY created_at DESC'
-    );
+    const {searchParams} = new URL(_req.url);
+    const cuisine = searchParams.get('cuisine');
+
+    let query = 'SELECT * FROM restaurants';
+
+    if(cuisine)
+    {
+      query += ' WHERE cuisine = $1';
+    }
+    query += ' ORDER BY created_at DESC';
+
+
+    let rows;
+
+    if(cuisine)
+    {
+      ({rows} = await pool.query(query, [cuisine]));
+    }
+    else
+    {
+      ({rows} = await pool.query(query));
+    }
     // Map every row - raw rows don't match the contract (NUMERIC comes back
     // as a string, timestamps as Date objects). See lib/types.ts.
     return NextResponse.json(rows.map(toRestaurant));
